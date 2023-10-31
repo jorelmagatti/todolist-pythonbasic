@@ -1,0 +1,43 @@
+version: "3"
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - ELASTIC_APM_LOG_ECS_REFORMATTING=override
+      - ELASTIC_APM_USE_STRUCTLOG=true
+      - ELASTIC_APM_LOG_LEVEL=debug
+      - HTTPX_LOG_LEVEL=debug
+      - FORCE_COLOR=true
+    volumes:
+      - ./todo_list:/app/todo_list
+    entrypoint: uvicorn --host 0.0.0.0 todo_list.__main__:app --reload --log-level=debug
+
+  db:
+    image: mariadb:10.8.2
+    ports:
+      - 3307:3306
+    # command: --init-file /home/jorel/GitHubProjects/todolist-pythonbasic/todo_list/todo_list/db/create_database.sql
+    volumes:
+      - ./todo_list/db/create_database.sql:/docker-entrypoint-initdb.d/init-01.sql
+    environment:
+      TZ: "America/Sao_Paulo"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MARIADB_USER: user
+      MARIADB_PASSWORD: mariadbPW
+      MARIADB_ROOT_PASSWORD: mariadbrootPW
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1 
+    
